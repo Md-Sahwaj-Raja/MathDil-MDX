@@ -886,7 +886,7 @@ if st.session_state.mdx_page == "Graph Studio":
     fig,
     use_container_width=True,
     config={"scrollZoom": True, "displaylogo": False},
-    key="roots_chart_main"
+   key=f"roots_chart_{len(critical)}_{x_min}_{x_max}"
 )
         st.caption("Numerical interval testing is limited to the selected range; discontinuities or missed critical points can affect results.")
 
