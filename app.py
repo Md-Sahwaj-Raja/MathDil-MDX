@@ -304,24 +304,13 @@ elif st.session_state.mdx_page == "Courses":
                 st.rerun()
 
     st.markdown('<div class="mdx-section-label">🎓 IIT JAM Mathematics</div>', unsafe_allow_html=True)
-    jam_col, jam_button_col = st.columns([1, 1], gap="large")
-    with jam_col:
-        st.markdown(
-            '<div class="mdx-card mdx-cyan" style="min-height:175px">'
-            '<div style="font-size:2rem">🎓</div><h3>IIT JAM Mathematics</h3>'
-            '<p>Explore Vector Space, Subspace, and Matrices with topic-wise lectures and study materials.</p></div>',
-            unsafe_allow_html=True,
-        )
-    with jam_button_col:
-        st.markdown('<div style="height:2.4rem"></div>', unsafe_allow_html=True)
-        if st.button("Open IIT JAM Mathematics →", key="course_iit_jam", use_container_width=True, type="primary"):
-            st.session_state["selected_course"] = "IIT JAM Mathematics"
-            # Do not open any topic contents until the learner clicks a topic.
-            st.session_state["selected_jam_topic"] = None
-            st.session_state["selected_jam_section"] = "Lectures"
-            st.session_state["jam_stage"] = "roadmap"
-            st.session_state.mdx_page = "Course Details"
-            st.rerun()
+   if st.button("Open IIT JAM Mathematics →", key="course_iit_jam", use_container_width=True, type="primary"):
+    st.session_state["selected_course"] = "IIT JAM Mathematics"
+    st.session_state["selected_jam_topic"] = None
+    st.session_state["selected_jam_section"] = "Lectures"
+    st.session_state["jam_stage"] = "roadmap"
+    st.session_state.mdx_page = "Course Details"
+    st.rerun()
 
     st.markdown('<div class="mdx-section-label">📘 Other Competitive Mathematics Exams</div>', unsafe_allow_html=True)
     other_cols = st.columns(2, gap="large")
