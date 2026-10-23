@@ -382,7 +382,7 @@ elif st.session_state.mdx_page == "Course Details":
 
             topic = st.session_state.get("selected_jam_topic")
             if topic not in jam_topics:
-                st.info("👆 Pehle Vector Space, Subspace ya Matrices par click karo. Uske baad hi us topic ke Lectures aur Study Materials khulenge.")
+                st.info("MathDil by Md Sahwaj Raja")
             else:
                 st.markdown(
                     f'<div class="mdx-course-group" style="border-color:#00d9ff;background:linear-gradient(145deg,rgba(3,55,78,.62),rgba(5,14,32,.98))">'
