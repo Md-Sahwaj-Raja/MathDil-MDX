@@ -382,189 +382,27 @@ elif st.session_state.mdx_page == "Course Details":
                         st.session_state.selected_jam_topic = topic_name
                         st.session_state.selected_jam_section = "Lectures"
                         st.rerun()
-if topic not in jam_topics:
-    st.markdown("""
-    <div style="
-        background: linear-gradient(110deg, #0B2447, #123C69, #075985);
-        border: 1px solid #00D9FF;
-        border-left: 5px solid #FFD166;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin: 18px 0;
-    ">
-        <div style="color:#FFD166;font-size:12px;font-weight:800;
-                    letter-spacing:2px;margin-bottom:8px;">
-            ✦ YOUR LEARNING JOURNEY
-        </div>
-        <div style="color:white;font-size:19px;font-weight:750;
-                    margin-bottom:8px;">
-            🎯 Your Journey to Linear Algebra Mastery Starts Here
-        </div>
-        <div style="color:#D7E9FF;font-size:15px;line-height:1.8;">
-            Select a topic to explore its lectures and study materials.
-            Learn step by step, strengthen your concepts, and master
-            Linear Algebra with MathDil MDX.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-                        st.markdown(
-            f'<div class="mdx-course-group" style="border-color:#00d9ff;background:linear-gradient(145deg,rgba(3,55,78,.62),rgba(5,14,32,.98))">'
-            f'<h3>{topic}</h3><p>IIT JAM Mathematics · Topic-wise learning workspace</p></div>',
-            unsafe_allow_html=True,
-        )
-        section = st.radio(
-            "Choose learning section",
-            ["Lectures", "Study Materials"],
-            horizontal=True,
-            key="jam_section_radio",
-            index=0 if st.session_state.get("selected_jam_section", "Lectures") == "Lectures" else 1,
-        )
-        st.session_state.selected_jam_section = section
-            st.session_state.selected_jam_section = section
-
-            if section == "Lectures":
-                st.markdown("### 🎥 Lectures")
-                st.caption(f"Video lectures for **{topic}** will be listed here.")
-                video_url = st.text_input("YouTube lecture URL (optional)", key=f"lecture_url_{topic}", placeholder="https://www.youtube.com/watch?v=...")
-                if video_url.strip():
-                    if "youtube.com" in video_url or "youtu.be" in video_url:
-                        st.video(video_url.strip())
-                    else:
-                        st.warning("Please enter a valid YouTube video URL.")
-                else:
-                    st.info("Abhi is topic ka lecture link add nahi hua. YouTube URL yahan paste kar sakte ho.")
-            else:
-                st.markdown("### 📄 Study Materials")
-                st.caption(f"Manage PDFs for **{topic}** — upload, view, download, rename, copy, move, or delete.")
-
-                # Persistent local storage: files remain after Streamlit reruns/restarts on this machine.
-                materials_root = Path(__file__).resolve().parent / "study_materials" / "IIT_JAM_Mathematics"
-                topic_folder_names = {"Vector Space": "Vector_Space", "Subspace": "Subspace", "Matrices": "Matrices"}
-                topic_folder = materials_root / topic_folder_names[topic]
-                topic_folder.mkdir(parents=True, exist_ok=True)
-
-                with st.expander("➕ Upload a new PDF", expanded=True):
-                    uploaded_pdf = st.file_uploader(
-                        f"Choose {topic} PDF", type=["pdf"], key=f"persistent_pdf_upload_{topic}"
-                    )
-                    if uploaded_pdf is not None:
-                        safe_name = Path(uploaded_pdf.name).name
-                        if not safe_name.lower().endswith(".pdf"):
-                            st.error("Please upload a PDF file.")
-                        else:
-                            target = topic_folder / safe_name
-                            if target.exists():
-                                st.warning(f"'{safe_name}' already exists. Choose a different filename or use Replace below.")
-                            else:
-                                target.write_bytes(uploaded_pdf.getvalue())
-                                st.success(f"Saved permanently in this project: {safe_name}")
-                                st.rerun()
-
-                pdf_paths = sorted(topic_folder.glob("*.pdf"), key=lambda q: q.name.lower())
-                st.markdown("#### 📚 Saved study materials")
-                if not pdf_paths:
-                    st.info("Abhi is topic ki koi PDF save nahi hai. 'Upload a new PDF' se add karo.")
-                else:
-                    chosen_name = st.selectbox(
-                        "Select a PDF to manage", [q.name for q in pdf_paths], key=f"manage_pdf_select_{topic}"
-                    )
-                    selected_pdf = topic_folder / chosen_name
-                    file_col, action_col = st.columns([1.2, 1], gap="large")
-                    with file_col:
-                        st.write(f"**📄 {selected_pdf.name}**")
-                        st.caption(f"Size: {selected_pdf.stat().st_size / 1024:.1f} KB")
-                        pdf_data = selected_pdf.read_bytes()
-                        st.download_button(
-                            "⬇️ Download PDF", data=pdf_data, file_name=selected_pdf.name,
-                            mime="application/pdf", key=f"download_saved_pdf_{topic}_{selected_pdf.name}",
-                            use_container_width=True,
-                        )
-                        import base64 as _b64
-                        encoded_pdf = _b64.b64encode(pdf_data).decode("utf-8")
-                        st.markdown(
-                            f'<iframe src="data:application/pdf;base64,{encoded_pdf}" width="100%" height="600" '
-                            'style="border:1px solid #164e78;border-radius:12px;background:white"></iframe>',
-                            unsafe_allow_html=True,
-                        )
-                    with action_col:
-                        with st.form(f"rename_pdf_form_{topic}"):
-                            st.markdown("**✏️ Rename / Edit filename**")
-                            new_stem = st.text_input("New filename (without .pdf)", value=selected_pdf.stem)
-                            rename_submit = st.form_submit_button("Save new name", use_container_width=True)
-                            if rename_submit:
-                                clean_stem = Path(new_stem.strip()).name
-                                if not clean_stem or clean_stem in {".", ".."}:
-                                    st.error("Enter a valid filename.")
-                                else:
-                                    new_path = selected_pdf.with_name(clean_stem + ".pdf")
-                                    if new_path.exists() and new_path != selected_pdf:
-                                        st.error("That filename already exists.")
-                                    else:
-                                        selected_pdf.rename(new_path)
-                                        st.success("Filename updated.")
-                                        st.rerun()
-
-                        st.markdown("**📋 Copy / Move PDF**")
-                        destination_topic = st.selectbox(
-                            "Destination topic", ["Vector Space", "Subspace", "Matrices"],
-                            index=["Vector Space", "Subspace", "Matrices"].index(topic),
-                            key=f"destination_topic_{topic}",
-                        )
-                        operation = st.radio(
-                            "Action", ["Copy", "Move"], horizontal=True, key=f"copy_move_action_{topic}"
-                        )
-                        if st.button(f"{operation} to {destination_topic}", key=f"execute_copy_move_{topic}", use_container_width=True):
-                            destination_folder = materials_root / topic_folder_names[destination_topic]
-                            destination_folder.mkdir(parents=True, exist_ok=True)
-                            destination_path = destination_folder / selected_pdf.name
-                            if destination_path.exists():
-                                st.error("A PDF with this name already exists in the destination folder.")
-                            elif destination_path == selected_pdf:
-                                st.info("This PDF is already in that topic folder.")
-                            else:
-                                import shutil as _shutil
-                                if operation == "Copy":
-                                    _shutil.copy2(selected_pdf, destination_path)
-                                else:
-                                    selected_pdf.rename(destination_path)
-                                st.success(f"PDF {operation.lower()}ed to {destination_topic}.")
-                                st.rerun()
-
-                        st.markdown("**🔁 Replace PDF contents**")
-                        replacement = st.file_uploader(
-                            "Choose replacement PDF", type=["pdf"], key=f"replace_pdf_upload_{topic}_{selected_pdf.name}"
-                        )
-                        replace_confirm = st.checkbox(
-                            "I confirm replacing this PDF with the uploaded file.",
-                            key=f"replace_confirm_{topic}_{selected_pdf.name}",
-                        )
-                        if st.button("Replace selected PDF", key=f"replace_pdf_button_{topic}_{selected_pdf.name}", use_container_width=True):
-                            if replacement is None:
-                                st.error("First choose a replacement PDF.")
-                            elif not replace_confirm:
-                                st.warning("Tick the confirmation checkbox before replacing.")
-                            else:
-                                selected_pdf.write_bytes(replacement.getvalue())
-                                st.success("PDF contents replaced.")
-                                st.rerun()
-
-                        st.markdown("**🗑️ Delete PDF**")
-                        delete_confirm = st.checkbox(
-                            f"I confirm deleting {selected_pdf.name}",
-                            key=f"delete_confirm_{topic}_{selected_pdf.name}",
-                        )
-                        if st.button("Delete selected PDF", key=f"delete_pdf_button_{topic}_{selected_pdf.name}", use_container_width=True):
-                            if delete_confirm:
-                                selected_pdf.unlink(missing_ok=True)
-                                st.success("PDF deleted from this app's study-material folder.")
-                                st.rerun()
-                            else:
-                                st.warning("Tick the confirmation checkbox before deleting.")
-
-
         topic = st.session_state.get("selected_jam_topic")
         if topic not in jam_topics:
-            st.info("👆 Pehle Vector Space, Subspace ya Matrices par click karo. Uske baad hi us topic ke Lectures aur Study Materials khulenge.")
+            st.markdown(
+                """
+                <div style="background:linear-gradient(110deg,#0B2447,#123C69,#075985);
+                            border:1px solid #00D9FF;border-left:5px solid #FFD166;
+                            border-radius:12px;padding:20px 24px;margin:18px 0;">
+                  <div style="color:#FFD166;font-size:12px;font-weight:800;letter-spacing:2px;margin-bottom:8px;">
+                    ✦ YOUR LEARNING JOURNEY
+                  </div>
+                  <div style="color:white;font-size:19px;font-weight:750;margin-bottom:8px;">
+                    🎯 Your Journey to Linear Algebra Mastery Starts Here
+                  </div>
+                  <div style="color:#D7E9FF;font-size:15px;line-height:1.8;">
+                    Select a topic to explore its lectures and study materials.
+                    Learn step by step, strengthen your concepts, and master Linear Algebra with MathDil MDX.
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         else:
             st.markdown(
                 f'<div class="mdx-course-group" style="border-color:#00d9ff;background:linear-gradient(145deg,rgba(3,55,78,.62),rgba(5,14,32,.98))">'
@@ -572,8 +410,10 @@ if topic not in jam_topics:
                 unsafe_allow_html=True,
             )
             section = st.radio(
-                "Choose learning section", ["Lectures", "Study Materials"],
-                horizontal=True, key="jam_section_radio",
+                "Choose learning section",
+                ["Lectures", "Study Materials"],
+                horizontal=True,
+                key="jam_section_radio",
                 index=0 if st.session_state.get("selected_jam_section", "Lectures") == "Lectures" else 1,
             )
             st.session_state.selected_jam_section = section
@@ -581,7 +421,11 @@ if topic not in jam_topics:
             if section == "Lectures":
                 st.markdown("### 🎥 Lectures")
                 st.caption(f"Video lectures for **{topic}** will be listed here.")
-                video_url = st.text_input("YouTube lecture URL (optional)", key=f"lecture_url_{topic}", placeholder="https://www.youtube.com/watch?v=...")
+                video_url = st.text_input(
+                    "YouTube lecture URL (optional)",
+                    key=f"lecture_url_{topic}",
+                    placeholder="https://www.youtube.com/watch?v=...",
+                )
                 if video_url.strip():
                     if "youtube.com" in video_url or "youtu.be" in video_url:
                         st.video(video_url.strip())
@@ -589,32 +433,43 @@ if topic not in jam_topics:
                         st.warning("Please enter a valid YouTube video URL.")
                 else:
                     st.info("Abhi is topic ka lecture link add nahi hua. YouTube URL yahan paste kar sakte ho.")
+
             else:
                 st.markdown("### 📄 Study Materials")
                 st.caption(f"Manage PDFs for **{topic}** — upload, view, download, rename, copy, move, or delete.")
-
-                # Persistent local storage: files remain after Streamlit reruns/restarts on this machine.
-                materials_root = Path(__file__).resolve().parent / "study_materials" / "IIT_JAM_Mathematics"
-                topic_folder_names = {"Vector Space": "Vector_Space", "Subspace": "Subspace", "Matrices": "Matrices"}
+                materials_root = APP_DIR / "study_materials" / "IIT_JAM_Mathematics"
+                topic_folder_names = {
+                    "Vector Space": "Vector_Space",
+                    "Subspace": "Subspace",
+                    "Matrices": "Matrices",
+                }
                 topic_folder = materials_root / topic_folder_names[topic]
                 topic_folder.mkdir(parents=True, exist_ok=True)
 
                 with st.expander("➕ Upload a new PDF", expanded=True):
                     uploaded_pdf = st.file_uploader(
-                        f"Choose {topic} PDF", type=["pdf"], key=f"persistent_pdf_upload_{topic}"
+                        f"Choose {topic} PDF (maximum 25 MB)",
+                        type=["pdf"],
+                        key=f"persistent_pdf_upload_{topic}",
                     )
                     if uploaded_pdf is not None:
                         safe_name = Path(uploaded_pdf.name).name
-                        if not safe_name.lower().endswith(".pdf"):
-                            st.error("Please upload a PDF file.")
+                        pdf_bytes = uploaded_pdf.getvalue()
+                        if len(pdf_bytes) > 25 * 1024 * 1024:
+                            st.error("PDF 25 MB se badi hai. Please compress karke dobara upload karo.")
+                        elif not pdf_bytes.startswith(b"%PDF"):
+                            st.error("File valid PDF nahi lag rahi. Please correct PDF upload karo.")
                         else:
                             target = topic_folder / safe_name
                             if target.exists():
-                                st.warning(f"'{safe_name}' already exists. Choose a different filename or use Replace below.")
+                                st.warning(f"'{safe_name}' already exists. Pehle rename karo ya Replace option use karo.")
                             else:
-                                target.write_bytes(uploaded_pdf.getvalue())
-                                st.success(f"Saved permanently in this project: {safe_name}")
-                                st.rerun()
+                                try:
+                                    target.write_bytes(pdf_bytes)
+                                    st.success(f"PDF saved: {safe_name}")
+                                    st.rerun()
+                                except OSError as exc:
+                                    st.error(f"PDF save nahi ho payi: {exc}")
 
                 pdf_paths = sorted(topic_folder.glob("*.pdf"), key=lambda q: q.name.lower())
                 st.markdown("#### 📚 Saved study materials")
@@ -622,33 +477,44 @@ if topic not in jam_topics:
                     st.info("Abhi is topic ki koi PDF save nahi hai. 'Upload a new PDF' se add karo.")
                 else:
                     chosen_name = st.selectbox(
-                        "Select a PDF to manage", [q.name for q in pdf_paths], key=f"manage_pdf_select_{topic}"
+                        "Select a PDF to manage",
+                        [q.name for q in pdf_paths],
+                        key=f"manage_pdf_select_{topic}",
                     )
                     selected_pdf = topic_folder / chosen_name
-                    file_col, action_col = st.columns([1.2, 1], gap="large")
+                    file_col, action_col = st.columns([1.1, 1], gap="large")
+
                     with file_col:
                         st.write(f"**📄 {selected_pdf.name}**")
                         st.caption(f"Size: {selected_pdf.stat().st_size / 1024:.1f} KB")
                         pdf_data = selected_pdf.read_bytes()
                         st.download_button(
-                            "⬇️ Download PDF", data=pdf_data, file_name=selected_pdf.name,
-                            mime="application/pdf", key=f"download_saved_pdf_{topic}_{selected_pdf.name}",
+                            "⬇️ Download PDF",
+                            data=pdf_data,
+                            file_name=selected_pdf.name,
+                            mime="application/pdf",
+                            key=f"download_saved_pdf_{topic}_{selected_pdf.name}",
                             use_container_width=True,
                         )
-                        import base64 as _b64
-                        encoded_pdf = _b64.b64encode(pdf_data).decode("utf-8")
-                        st.markdown(
-                            f'<iframe src="data:application/pdf;base64,{encoded_pdf}" width="100%" height="600" '
-                            'style="border:1px solid #164e78;border-radius:12px;background:white"></iframe>',
-                            unsafe_allow_html=True,
-                        )
+                        if len(pdf_data) <= 8 * 1024 * 1024:
+                            if st.checkbox("Preview PDF (may use extra memory)", key=f"preview_pdf_{topic}_{selected_pdf.name}"):
+                                encoded_pdf = base64.b64encode(pdf_data).decode("ascii")
+                                st.markdown(
+                                    f'<iframe src="data:application/pdf;base64,{encoded_pdf}" '
+                                    'width="100%" height="560" style="border:1px solid #164e78;'
+                                    'border-radius:12px;background:white"></iframe>',
+                                    unsafe_allow_html=True,
+                                )
+                        else:
+                            st.info("Large PDF hai. App ko hang hone se bachane ke liye inline preview disabled hai; Download use karo.")
+
                     with action_col:
                         with st.form(f"rename_pdf_form_{topic}"):
                             st.markdown("**✏️ Rename / Edit filename**")
                             new_stem = st.text_input("New filename (without .pdf)", value=selected_pdf.stem)
                             rename_submit = st.form_submit_button("Save new name", use_container_width=True)
                             if rename_submit:
-                                clean_stem = Path(new_stem.strip()).name
+                                clean_stem = Path(new_stem.strip()).name.strip()
                                 if not clean_stem or clean_stem in {".", ".."}:
                                     st.error("Enter a valid filename.")
                                 else:
@@ -656,67 +522,98 @@ if topic not in jam_topics:
                                     if new_path.exists() and new_path != selected_pdf:
                                         st.error("That filename already exists.")
                                     else:
-                                        selected_pdf.rename(new_path)
-                                        st.success("Filename updated.")
-                                        st.rerun()
+                                        try:
+                                            selected_pdf.rename(new_path)
+                                            st.success("Filename updated.")
+                                            st.rerun()
+                                        except OSError as exc:
+                                            st.error(f"Rename failed: {exc}")
 
                         st.markdown("**📋 Copy / Move PDF**")
                         destination_topic = st.selectbox(
-                            "Destination topic", ["Vector Space", "Subspace", "Matrices"],
+                            "Destination topic",
+                            ["Vector Space", "Subspace", "Matrices"],
                             index=["Vector Space", "Subspace", "Matrices"].index(topic),
                             key=f"destination_topic_{topic}",
                         )
                         operation = st.radio(
-                            "Action", ["Copy", "Move"], horizontal=True, key=f"copy_move_action_{topic}"
+                            "Action", ["Copy", "Move"], horizontal=True,
+                            key=f"copy_move_action_{topic}",
                         )
-                        if st.button(f"{operation} to {destination_topic}", key=f"execute_copy_move_{topic}", use_container_width=True):
+                        if st.button(
+                            f"{operation} to {destination_topic}",
+                            key=f"execute_copy_move_{topic}",
+                            use_container_width=True,
+                        ):
                             destination_folder = materials_root / topic_folder_names[destination_topic]
                             destination_folder.mkdir(parents=True, exist_ok=True)
                             destination_path = destination_folder / selected_pdf.name
                             if destination_path.exists():
                                 st.error("A PDF with this name already exists in the destination folder.")
-                            elif destination_path == selected_pdf:
+                            elif destination_path.resolve() == selected_pdf.resolve():
                                 st.info("This PDF is already in that topic folder.")
                             else:
-                                import shutil as _shutil
-                                if operation == "Copy":
-                                    _shutil.copy2(selected_pdf, destination_path)
-                                else:
-                                    selected_pdf.rename(destination_path)
-                                st.success(f"PDF {operation.lower()}ed to {destination_topic}.")
-                                st.rerun()
+                                try:
+                                    if operation == "Copy":
+                                        import shutil
+                                        shutil.copy2(selected_pdf, destination_path)
+                                    else:
+                                        selected_pdf.rename(destination_path)
+                                    st.success(f"PDF {operation.lower()}ed to {destination_topic}.")
+                                    st.rerun()
+                                except OSError as exc:
+                                    st.error(f"{operation} failed: {exc}")
 
                         st.markdown("**🔁 Replace PDF contents**")
                         replacement = st.file_uploader(
-                            "Choose replacement PDF", type=["pdf"], key=f"replace_pdf_upload_{topic}_{selected_pdf.name}"
+                            "Choose replacement PDF (maximum 25 MB)",
+                            type=["pdf"],
+                            key=f"replace_pdf_upload_{topic}_{selected_pdf.name}",
                         )
                         replace_confirm = st.checkbox(
                             "I confirm replacing this PDF with the uploaded file.",
                             key=f"replace_confirm_{topic}_{selected_pdf.name}",
                         )
-                        if st.button("Replace selected PDF", key=f"replace_pdf_button_{topic}_{selected_pdf.name}", use_container_width=True):
+                        if st.button(
+                            "Replace selected PDF",
+                            key=f"replace_pdf_button_{topic}_{selected_pdf.name}",
+                            use_container_width=True,
+                        ):
                             if replacement is None:
                                 st.error("First choose a replacement PDF.")
                             elif not replace_confirm:
                                 st.warning("Tick the confirmation checkbox before replacing.")
                             else:
-                                selected_pdf.write_bytes(replacement.getvalue())
-                                st.success("PDF contents replaced.")
-                                st.rerun()
+                                replacement_bytes = replacement.getvalue()
+                                if len(replacement_bytes) > 25 * 1024 * 1024 or not replacement_bytes.startswith(b"%PDF"):
+                                    st.error("Replacement must be a valid PDF under 25 MB.")
+                                else:
+                                    try:
+                                        selected_pdf.write_bytes(replacement_bytes)
+                                        st.success("PDF contents replaced.")
+                                        st.rerun()
+                                    except OSError as exc:
+                                        st.error(f"Replace failed: {exc}")
 
                         st.markdown("**🗑️ Delete PDF**")
                         delete_confirm = st.checkbox(
                             f"I confirm deleting {selected_pdf.name}",
                             key=f"delete_confirm_{topic}_{selected_pdf.name}",
                         )
-                        if st.button("Delete selected PDF", key=f"delete_pdf_button_{topic}_{selected_pdf.name}", use_container_width=True):
+                        if st.button(
+                            "Delete selected PDF",
+                            key=f"delete_pdf_button_{topic}_{selected_pdf.name}",
+                            use_container_width=True,
+                        ):
                             if delete_confirm:
-                                selected_pdf.unlink(missing_ok=True)
-                                st.success("PDF deleted from this app's study-material folder.")
-                                st.rerun()
+                                try:
+                                    selected_pdf.unlink(missing_ok=True)
+                                    st.success("PDF deleted from this app's study-material folder.")
+                                    st.rerun()
+                                except OSError as exc:
+                                    st.error(f"Delete failed: {exc}")
                             else:
                                 st.warning("Tick the confirmation checkbox before deleting.")
-
 
         st.markdown("---")
         if st.button("← Back to Courses", key="course_details_back"):
