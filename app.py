@@ -407,16 +407,19 @@ if topic not in jam_topics:
         </div>
     </div>
     """, unsafe_allow_html=True)
-                  st.markdown(
+                        st.markdown(
             f'<div class="mdx-course-group" style="border-color:#00d9ff;background:linear-gradient(145deg,rgba(3,55,78,.62),rgba(5,14,32,.98))">'
             f'<h3>{topic}</h3><p>IIT JAM Mathematics · Topic-wise learning workspace</p></div>',
             unsafe_allow_html=True,
         )
-            section = st.radio(
-                "Choose learning section", ["Lectures", "Study Materials"],
-                horizontal=True, key="jam_section_radio",
-                index=0 if st.session_state.get("selected_jam_section", "Lectures") == "Lectures" else 1,
-            )
+        section = st.radio(
+            "Choose learning section",
+            ["Lectures", "Study Materials"],
+            horizontal=True,
+            key="jam_section_radio",
+            index=0 if st.session_state.get("selected_jam_section", "Lectures") == "Lectures" else 1,
+        )
+        st.session_state.selected_jam_section = section
             st.session_state.selected_jam_section = section
 
             if section == "Lectures":
