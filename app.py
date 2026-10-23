@@ -645,8 +645,8 @@ if st.session_state.mdx_page == "Graph Studio":
         fig.add_hline(y=0, line_color="#475569", line_width=1)
         fig.add_vline(x=0, line_color="#475569", line_width=1)
         yrange = [ylo, yhi] if ylo is not None and yhi is not None and ylo < yhi else None
-        grid_on = st.session_state.get("graph_show_grid", True)
-        bg_choice = st.session_state.get("graph_background_theme", "Current navy")
+        grid_on = video_grid_on
+        bg_choice = video_bg_choice
         is_white = bg_choice == "White"
         plot_bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "rgba(5,16,38,0.98)")
         grid_color = "rgba(71,85,105,0.22)" if is_white else "rgba(103,232,249,0.22)"
@@ -670,8 +670,8 @@ if st.session_state.mdx_page == "Graph Studio":
     def make_graph_3d(items, xlo, xhi, ylo, yhi, height=570):
         """Plot entered expressions as surfaces z=f(x,y) in 3D mode."""
         fig = go.Figure()
-        grid_on = st.session_state.get("graph_show_grid", True)
-        bg_choice = st.session_state.get("graph_background_theme", "Current navy")
+        grid_on = video_grid_on
+        bg_choice = video_bg_choice
         is_white = bg_choice == "White"
         bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
         grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.28)"
@@ -1100,6 +1100,14 @@ if st.session_state.mdx_page == "Graph Studio":
         )
         frame_count = st.slider("Animation frames", min_value=10, max_value=80, value=35, step=5, key="animation_frames")
         duration = st.slider("Milliseconds per frame", min_value=30, max_value=250, value=80, step=10, key="animation_duration")
+        # Video Plotter has its own visible theme controls, so users do not need to
+        # leave this tab to change the animation background.
+        theme_col, grid_col = st.columns(2)
+        video_bg_choice = theme_col.selectbox(
+            "Animation background", ["Current navy", "Pure black", "White"],
+            index=0, key="video_plot_background"
+        )
+        video_grid_on = grid_col.checkbox("Show 3D/2D grid", value=True, key="video_plot_grid")
         if animation_dimension == "2D":
             st.caption("2D mode: animates explicit functions y = f(x). Implicit equations are not included in this animation.")
         else:
@@ -1121,11 +1129,11 @@ if st.session_state.mdx_page == "Graph Studio":
                         frame_data.append(go.Scatter(x=xs[:upto], y=ys_curve[:upto], mode="lines", line=dict(color=p["color"], width=3), name=p["label"]))
                     frames.append(go.Frame(data=frame_data, name=str(k)))
                 fig = go.Figure(data=traces, frames=frames)
-                bg_choice = st.session_state.get("graph_background_theme", "Current navy")
+                bg_choice = video_bg_choice
                 is_white = bg_choice == "White"
                 plot_bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
                 font_color = "#172033" if is_white else "#E6F4FF"
-                grid_on = st.session_state.get("graph_show_grid", True)
+                grid_on = video_grid_on
                 grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.22)"
                 fig.update_layout(template="plotly_white" if is_white else "plotly_dark", paper_bgcolor=plot_bg, plot_bgcolor=plot_bg,
                     font=dict(color=font_color), height=520, title="MathDil MDX — 2D curve animation",
@@ -1176,8 +1184,13 @@ if st.session_state.mdx_page == "Graph Studio":
                     blank_z = np.full((grid_n, grid_n), np.nan, dtype=float)
                     surface_data = []
                     for p, Z3 in z_values:
+                        # Show a small leading patch in the preview. The animation's
+                        # first frame still reveals the surface progressively, avoiding
+                        # an apparently broken axes-only preview before Play is pressed.
+                        preview_z = Z3.copy()
+                        preview_z[8:, :] = np.nan
                         surface_data.append(go.Surface(
-                            x=X3, y=Y3, z=blank_z.copy(),
+                            x=X3, y=Y3, z=preview_z,
                             name=p["label"], showscale=False, opacity=0.96,
                             connectgaps=False,
                             colorscale=[[0, p["color"]], [1, "#f8fafc"]],
@@ -1189,7 +1202,7 @@ if st.session_state.mdx_page == "Graph Studio":
                     for k in range(1, frame_count + 1):
                         # Grow from the first row to the complete surface. At least two
                         # adjacent rows are revealed so Plotly can render a visible patch.
-                        upto = max(2, min(grid_n, int(np.ceil(grid_n * k / frame_count))))
+                        upto = max(8, min(grid_n, int(np.ceil(grid_n * k / frame_count))))
                         frame_surfaces = []
                         for p, Z3 in z_values:
                             Z_step = Z3.copy()
@@ -1209,11 +1222,11 @@ if st.session_state.mdx_page == "Graph Studio":
                             name=str(k)
                         ))
 
-                    bg_choice = st.session_state.get("graph_background_theme", "Current navy")
+                    bg_choice = video_bg_choice
                     is_white = bg_choice == "White"
                     bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
                     font_color = "#172033" if is_white else "#E6F4FF"
-                    grid_on = st.session_state.get("graph_show_grid", True)
+                    grid_on = video_grid_on
                     grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.28)"
                     fig = go.Figure(data=surface_data, frames=frames)
                     fig.update_layout(
@@ -1270,7 +1283,7 @@ if st.session_state.mdx_page == "Graph Studio":
                         file_name="MathDil_MDX_3D_surface_animation.html",
                         mime="text/html"
                     )
-                    st.success("3D animation created. Press Play to reveal the surface from a blank plot, or use Replay to watch it again.")
+                    st.success("3D animation created. The preview shows the first part of the surface; press Play or Replay to watch it draw progressively.")
     with tabs[8]:
         st.markdown("### MathDil MDX — Algorithms")
         st.markdown("**Roots algorithm**")
