@@ -382,11 +382,31 @@ elif st.session_state.mdx_page == "Course Details":
                         st.session_state.selected_jam_topic = topic_name
                         st.session_state.selected_jam_section = "Lectures"
                         st.rerun()
-
-        topic = st.session_state.get("selected_jam_topic")
-        if topic not in jam_topics:
-            st.info("👆 Pehle Vector Space, Subspace ya Matrices par click karo. Uske baad hi us topic ke Lectures aur Study Materials khulenge.")
-        else:
+if topic not in jam_topics:
+    st.markdown("""
+    <div style="
+        background: linear-gradient(110deg, #0B2447, #123C69, #075985);
+        border: 1px solid #00D9FF;
+        border-left: 5px solid #FFD166;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin: 18px 0;
+    ">
+        <div style="color:#FFD166;font-size:12px;font-weight:800;
+                    letter-spacing:2px;margin-bottom:8px;">
+            ✦ YOUR LEARNING JOURNEY
+        </div>
+        <div style="color:white;font-size:19px;font-weight:750;
+                    margin-bottom:8px;">
+            🎯 Your Journey to Linear Algebra Mastery Starts Here
+        </div>
+        <div style="color:#D7E9FF;font-size:15px;line-height:1.8;">
+            Select a topic to explore its lectures and study materials.
+            Learn step by step, strengthen your concepts, and master
+            Linear Algebra with MathDil MDX.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
             st.markdown(
                 f'<div class="mdx-course-group" style="border-color:#00d9ff;background:linear-gradient(145deg,rgba(3,55,78,.62),rgba(5,14,32,.98))">'
                 f'<h3>{topic}</h3><p>IIT JAM Mathematics · Topic-wise learning workspace</p></div>',
