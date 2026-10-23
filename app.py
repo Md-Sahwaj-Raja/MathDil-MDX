@@ -882,7 +882,12 @@ if st.session_state.mdx_page == "Graph Studio":
                 st.write("**Decreasing:** " + (", ".join(f"({fmt_num(a)}, {fmt_num(b)})" for a,b in dec) if dec else "No decreasing interval detected."))
                 fig=make_graph([{"expr":e,"label":f"f{p['index']+1}(x)","color":p['color']},{"expr":derivative,"label":f"f{p['index']+1}′(x)","color":COLORS[(p['index']+1)%len(COLORS)]}],x_min,x_max,y_min,y_max,height=400)
                 for c in critical: fig.add_vline(x=c,line_dash="dash",line_color="#d97706")
-                st.plotly_chart(fig,use_container_width=True,config={"scrollZoom":True,"displaylogo":False})
+                st.plotly_chart(
+    fig,
+    use_container_width=True,
+    config={"scrollZoom": True, "displaylogo": False},
+    key=f"roots_chart_{len(roots)}"
+)
         st.caption("Numerical interval testing is limited to the selected range; discontinuities or missed critical points can affect results.")
 
     with tabs[3]:
