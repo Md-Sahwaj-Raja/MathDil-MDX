@@ -493,62 +493,63 @@ elif st.session_state.mdx_page == "Course Details":
 elif st.session_state.mdx_page == "Tools":
     st.markdown("## 🛠 Mathematical Tools")
     st.markdown("Explore the supported function syntax used in MathDil MDX Graph Studio.")
-    st.markdown("""
-    <div style="padding:1rem 1.2rem;border:1px solid #087ea4;border-radius:16px;background:linear-gradient(120deg,rgba(4,45,78,.92),rgba(38,20,79,.88));margin:.5rem 0 1rem">
-      <div style="font-size:1.25rem;font-weight:800;color:#67e8f9">📘 Function Syntax Guide</div>
-      <div style="color:#d7eaff">Use <code>**</code> for powers and <code>*</code> for multiplication. You can use <code>^</code> for powers too; the graph parser converts it to <code>**</code>. Trigonometric functions use radians.</div>
-    </div>
-    """, unsafe_allow_html=True)
-    guide_tabs = st.tabs(["Algebra", "Trigonometry", "Exponential & Log", "Constants & Parameters", "Implicit Equations"])
-    with guide_tabs[0]:
-        st.markdown("""| Mathematics | Enter this |
-|---|---|
-| \(x^2\) | `x**2` |
-| \(x^3\) | `x**3` |
-| \(x^4+2x^2-1\) | `x**4 + 2*x**2 - 1` |
-| \(\sqrt{x}\) | `sqrt(x)` |
-| \(|x|\) | `abs(x)` |
-| \(1/x\) | `1/x` |
-| \(\frac{x^2-1}{x+1}\) | `(x**2 - 1)/(x + 1)` |""")
-    with guide_tabs[1]:
-        st.markdown("""| Mathematics | Enter this |
-|---|---|
-| \(\sin x\) | `sin(x)` |
-| \(\cos x\) | `cos(x)` |
-| \(\tan x\) | `tan(x)` |
-| \(\sin^{-1}x\) | `asin(x)` |
-| \(\cos^{-1}x\) | `acos(x)` |
-| \(\tan^{-1}x\) | `atan(x)` |
-| \(\sinh x, \cosh x, \tanh x\) | `sinh(x)`, `cosh(x)`, `tanh(x)` |""")
-    with guide_tabs[2]:
-        st.markdown("""| Mathematics | Enter this |
-|---|---|
-| \(e^x\) | `exp(x)` |
-| \(\ln x\) | `log(x)` or `ln(x)` |
-| \(e^{-x^2}\) | `exp(-x**2)` |
-| \(x e^{-x}\) | `x*exp(-x)` |""")
-    with guide_tabs[3]:
-        st.markdown("""| Symbol | Meaning |
-|---|---|
-| `pi` | \(\pi\) |
-| `E` | Euler's number \(e\) |
-| `a`, `b` | Adjustable parameters in the Graph Studio sidebar |""")
-    with guide_tabs[4]:
-        st.markdown("""| Curve | Enter this equation |
-|---|---|
-| Circle | `x**2 + y**2 = 25` |
-| Ellipse | `x**2/9 + y**2/4 = 1` |
-| Hyperbola | `x**2 - y**2 = 1` |
-| Line | `y = 2*x + 1` |""")
-        st.caption("Implicit equations use both x and y. Keep multiplication explicit with * where needed.")
-    st.markdown("### Try these examples")
-    st.code("""x**2 - 4
-x**3 - 3*x
-sin(x) + cos(x)
-exp(-x**2)
-(x**2 - 1)/(x + 1)
-x**2 + y**2 = 25""", language="text")
-    st.info("This guide lists functions currently supported by the Graph Studio parser. Other functions may need to be added to the parser before they can be plotted.")
+    with st.expander("📘 Function Syntax Guide — click to view instructions", expanded=False):
+        st.markdown("""
+        <div style="padding:1rem 1.2rem;border:1px solid #087ea4;border-radius:16px;background:linear-gradient(120deg,rgba(4,45,78,.92),rgba(38,20,79,.88));margin:.5rem 0 1rem">
+          <div style="font-size:1.25rem;font-weight:800;color:#67e8f9">📘 Function Syntax Guide</div>
+          <div style="color:#d7eaff">Use <code>**</code> for powers and <code>*</code> for multiplication. You can use <code>^</code> for powers too; the graph parser converts it to <code>**</code>. Trigonometric functions use radians.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        guide_tabs = st.tabs(["Algebra", "Trigonometry", "Exponential & Log", "Constants & Parameters", "Implicit Equations"])
+        with guide_tabs[0]:
+            st.markdown("""| Mathematics | Enter this |
+    |---|---|
+    | \(x^2\) | `x**2` |
+    | \(x^3\) | `x**3` |
+    | \(x^4+2x^2-1\) | `x**4 + 2*x**2 - 1` |
+    | \(\sqrt{x}\) | `sqrt(x)` |
+    | \(|x|\) | `abs(x)` |
+    | \(1/x\) | `1/x` |
+    | \(\frac{x^2-1}{x+1}\) | `(x**2 - 1)/(x + 1)` |""")
+        with guide_tabs[1]:
+            st.markdown("""| Mathematics | Enter this |
+    |---|---|
+    | \(\sin x\) | `sin(x)` |
+    | \(\cos x\) | `cos(x)` |
+    | \(\tan x\) | `tan(x)` |
+    | \(\sin^{-1}x\) | `asin(x)` |
+    | \(\cos^{-1}x\) | `acos(x)` |
+    | \(\tan^{-1}x\) | `atan(x)` |
+    | \(\sinh x, \cosh x, \tanh x\) | `sinh(x)`, `cosh(x)`, `tanh(x)` |""")
+        with guide_tabs[2]:
+            st.markdown("""| Mathematics | Enter this |
+    |---|---|
+    | \(e^x\) | `exp(x)` |
+    | \(\ln x\) | `log(x)` or `ln(x)` |
+    | \(e^{-x^2}\) | `exp(-x**2)` |
+    | \(x e^{-x}\) | `x*exp(-x)` |""")
+        with guide_tabs[3]:
+            st.markdown("""| Symbol | Meaning |
+    |---|---|
+    | `pi` | \(\pi\) |
+    | `E` | Euler's number \(e\) |
+    | `a`, `b` | Adjustable parameters in the Graph Studio sidebar |""")
+        with guide_tabs[4]:
+            st.markdown("""| Curve | Enter this equation |
+    |---|---|
+    | Circle | `x**2 + y**2 = 25` |
+    | Ellipse | `x**2/9 + y**2/4 = 1` |
+    | Hyperbola | `x**2 - y**2 = 1` |
+    | Line | `y = 2*x + 1` |""")
+            st.caption("Implicit equations use both x and y. Keep multiplication explicit with * where needed.")
+        st.markdown("### Try these examples")
+        st.code("""x**2 - 4
+    x**3 - 3*x
+    sin(x) + cos(x)
+    exp(-x**2)
+    (x**2 - 1)/(x + 1)
+    x**2 + y**2 = 25""", language="text")
+        st.info("This guide lists functions currently supported by the Graph Studio parser. Other functions may need to be added to the parser before they can be plotted.")
     if st.button("← Back to Home", key="back_home_tools"):
         st.session_state.mdx_page = "Home"
         st.rerun()
@@ -645,18 +646,64 @@ if st.session_state.mdx_page == "Graph Studio":
         fig.add_vline(x=0, line_color="#475569", line_width=1)
         yrange = [ylo, yhi] if ylo is not None and yhi is not None and ylo < yhi else None
         grid_on = st.session_state.get("graph_show_grid", True)
-        fig.update_layout(template="plotly_dark", height=height, title=title,
+        bg_choice = st.session_state.get("graph_background_theme", "Current navy")
+        is_white = bg_choice == "White"
+        plot_bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "rgba(5,16,38,0.98)")
+        grid_color = "rgba(71,85,105,0.22)" if is_white else "rgba(103,232,249,0.22)"
+        axis_text = "#172033" if is_white else "#E6F4FF"
+        axis_line = "#64748B" if is_white else "#54718F"
+        zero_line = "#64748B" if is_white else "#FFD166"
+        fig.update_layout(template="plotly_white" if is_white else "plotly_dark", height=height, title=title,
             margin=dict(l=15, r=15, t=45 if title else 15, b=15),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(5,16,38,0.98)",
-            font=dict(color="#E6F4FF"), hovermode="closest",
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor=plot_bg,
+            font=dict(color=axis_text), hovermode="closest",
             xaxis=dict(title="x", range=[xlo, xhi], showgrid=grid_on,
-                       gridcolor="rgba(103,232,249,0.22)", zeroline=True,
-                       zerolinecolor="#FFD166", zerolinewidth=1.5, linecolor="#54718F"),
+                       gridcolor=grid_color, zeroline=True,
+                       zerolinecolor=zero_line, zerolinewidth=1.5, linecolor=axis_line),
             yaxis=dict(title="y", range=yrange, showgrid=grid_on,
-                       gridcolor="rgba(168,85,247,0.20)", zeroline=True,
-                       zerolinecolor="#FFD166", zerolinewidth=1.5, linecolor="#54718F"),
+                       gridcolor=grid_color, zeroline=True,
+                       zerolinecolor=zero_line, zerolinewidth=1.5, linecolor=axis_line),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0,
-                        bgcolor="rgba(3,12,29,0.72)"))
+                        bgcolor="rgba(255,255,255,0.78)" if is_white else "rgba(3,12,29,0.72)"))
+        return fig
+
+    def make_graph_3d(items, xlo, xhi, ylo, yhi, height=570):
+        """Plot entered expressions as surfaces z=f(x,y) in 3D mode."""
+        fig = go.Figure()
+        grid_on = st.session_state.get("graph_show_grid", True)
+        bg_choice = st.session_state.get("graph_background_theme", "Current navy")
+        is_white = bg_choice == "White"
+        bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
+        grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.28)"
+        font_color = "#172033" if is_white else "#E6F4FF"
+        xs = np.linspace(float(xlo), float(xhi), 100)
+        ys = np.linspace(float(ylo), float(yhi), 100)
+        X, Y = np.meshgrid(xs, ys)
+        for item in items:
+            try:
+                fn = sp.lambdify((x, y), item["expr"], modules=["numpy"])
+                with np.errstate(all="ignore"):
+                    Z = np.asarray(fn(X, Y))
+                if np.isscalar(Z):
+                    Z = np.full(X.shape, Z)
+                if np.iscomplexobj(Z):
+                    Z = np.where(np.abs(Z.imag) < 1e-8, Z.real, np.nan)
+                Z = np.asarray(Z, dtype=float)
+                Z[~np.isfinite(Z)] = np.nan
+                Z[np.abs(Z) > 1e6] = np.nan
+                fig.add_trace(go.Surface(x=X, y=Y, z=Z, name=item["label"],
+                    showscale=False, opacity=0.92, colorscale=[[0, item.get("color", COLORS[0])], [1, "#f8fafc"]],
+                    hovertemplate="x=%{x:.3f}<br>y=%{y:.3f}<br>z=%{z:.3f}<extra></extra>"))
+            except Exception:
+                continue
+        fig.update_layout(template="plotly_white" if is_white else "plotly_dark", height=height,
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor=bg,
+            font=dict(color=font_color), margin=dict(l=0,r=0,t=35,b=0),
+            scene=dict(xaxis_title="x", yaxis_title="y", zaxis_title="z",
+                xaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg),
+                yaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg),
+                zaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg),
+                bgcolor=bg))
         return fig
 
     def real_roots_in_window(expr, lo, hi):
@@ -706,6 +753,8 @@ if st.session_state.mdx_page == "Graph Studio":
 
     with st.sidebar:
         st.header("⚙️ Graph settings")
+        st.selectbox("Graph dimension", ["2D", "3D"], index=0, key="graph_dimension", help="2D plots y=f(x) and implicit curves. 3D plots z=f(x,y) surfaces.")
+        st.selectbox("Graph background", ["Current navy", "Pure black", "White"], index=0, key="graph_background_theme", help="Choose the plotting area background: navy, black, or white.")
         x_min = st.number_input("x minimum", value=-10.0, step=1.0, key="x_min")
         x_max = st.number_input("x maximum", value=10.0, step=1.0, key="x_max")
         y_min = st.number_input("y minimum", value=-10.0, step=1.0, key="y_min")
@@ -834,8 +883,13 @@ if st.session_state.mdx_page == "Graph Studio":
         st.markdown("### Interactive Graph Studio")
         st.caption("Hover to inspect coordinates; scroll to zoom and drag to pan. Use the camera icon to export a graph image.")
         if visible_items:
-            st.plotly_chart(make_graph(visible_items, x_min, x_max, y_min, y_max, height=570), use_container_width=True,
-                config={"scrollZoom": True, "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "MathDil_MDX_graph", "scale": 2}})
+            if st.session_state.get("graph_dimension", "2D") == "3D":
+                st.caption("3D mode interprets each entered expression as a surface z = f(x, y). For example: x**2 + y**2 or sin(x)*cos(y).")
+                st.plotly_chart(make_graph_3d(visible_items, x_min, x_max, y_min, y_max, height=600), use_container_width=True,
+                    config={"scrollZoom": True, "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "MathDil_MDX_graph_3D", "scale": 2}})
+            else:
+                st.plotly_chart(make_graph(visible_items, x_min, x_max, y_min, y_max, height=570), use_container_width=True,
+                    config={"scrollZoom": True, "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "MathDil_MDX_graph", "scale": 2}})
         if explicit_functions:
             val = safe_value(expr, point_x)
             m1, m2, m3 = st.columns(3)
