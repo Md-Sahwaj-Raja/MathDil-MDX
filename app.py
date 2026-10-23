@@ -502,46 +502,46 @@ elif st.session_state.mdx_page == "Tools":
         """, unsafe_allow_html=True)
         guide_tabs = st.tabs(["Algebra", "Trigonometry", "Exponential & Log", "Constants & Parameters", "Implicit Equations"])
         with guide_tabs[0]:
-            st.markdown("""| Mathematics | Enter this |
-    |---|---|
-    | \(x^2\) | `x**2` |
-    | \(x^3\) | `x**3` |
-    | \(x^4+2x^2-1\) | `x**4 + 2*x**2 - 1` |
-    | \(\sqrt{x}\) | `sqrt(x)` |
-    | \(|x|\) | `abs(x)` |
-    | \(1/x\) | `1/x` |
-    | \(\frac{x^2-1}{x+1}\) | `(x**2 - 1)/(x + 1)` |""")
+            st.table([
+                {"Mathematics": "x²", "Enter this": "x**2"},
+                {"Mathematics": "x³", "Enter this": "x**3"},
+                {"Mathematics": "x⁴ + 2x² − 1", "Enter this": "x**4 + 2*x**2 - 1"},
+                {"Mathematics": "Square root of x", "Enter this": "sqrt(x)"},
+                {"Mathematics": "Absolute value |x|", "Enter this": "abs(x)"},
+                {"Mathematics": "1 divided by x", "Enter this": "1/x"},
+                {"Mathematics": "(x² − 1)/(x + 1)", "Enter this": "(x**2 - 1)/(x + 1)"},
+            ])
         with guide_tabs[1]:
-            st.markdown("""| Mathematics | Enter this |
-    |---|---|
-    | \(\sin x\) | `sin(x)` |
-    | \(\cos x\) | `cos(x)` |
-    | \(\tan x\) | `tan(x)` |
-    | \(\sin^{-1}x\) | `asin(x)` |
-    | \(\cos^{-1}x\) | `acos(x)` |
-    | \(\tan^{-1}x\) | `atan(x)` |
-    | \(\sinh x, \cosh x, \tanh x\) | `sinh(x)`, `cosh(x)`, `tanh(x)` |""")
+            st.table([
+                {"Mathematics": "Sine", "Enter this": "sin(x)"},
+                {"Mathematics": "Cosine", "Enter this": "cos(x)"},
+                {"Mathematics": "Tangent", "Enter this": "tan(x)"},
+                {"Mathematics": "Inverse sine", "Enter this": "asin(x)"},
+                {"Mathematics": "Inverse cosine", "Enter this": "acos(x)"},
+                {"Mathematics": "Inverse tangent", "Enter this": "atan(x)"},
+                {"Mathematics": "Hyperbolic functions", "Enter this": "sinh(x), cosh(x), tanh(x)"},
+            ])
         with guide_tabs[2]:
-            st.markdown("""| Mathematics | Enter this |
-    |---|---|
-    | \(e^x\) | `exp(x)` |
-    | \(\ln x\) | `log(x)` or `ln(x)` |
-    | \(e^{-x^2}\) | `exp(-x**2)` |
-    | \(x e^{-x}\) | `x*exp(-x)` |""")
+            st.table([
+                {"Mathematics": "eˣ", "Enter this": "exp(x)"},
+                {"Mathematics": "Natural logarithm ln(x)", "Enter this": "log(x) or ln(x)"},
+                {"Mathematics": "e to the power −x²", "Enter this": "exp(-x**2)"},
+                {"Mathematics": "x multiplied by e⁻ˣ", "Enter this": "x*exp(-x)"},
+            ])
         with guide_tabs[3]:
-            st.markdown("""| Symbol | Meaning |
-    |---|---|
-    | `pi` | \(\pi\) |
-    | `E` | Euler's number \(e\) |
-    | `a`, `b` | Adjustable parameters in the Graph Studio sidebar |""")
+            st.table([
+                {"Symbol": "pi", "Meaning": "π (pi)"},
+                {"Symbol": "E", "Meaning": "Euler's number e"},
+                {"Symbol": "a, b", "Meaning": "Adjustable parameters in Graph Studio, when enabled"},
+            ])
         with guide_tabs[4]:
-            st.markdown("""| Curve | Enter this equation |
-    |---|---|
-    | Circle | `x**2 + y**2 = 25` |
-    | Ellipse | `x**2/9 + y**2/4 = 1` |
-    | Hyperbola | `x**2 - y**2 = 1` |
-    | Line | `y = 2*x + 1` |""")
-            st.caption("Implicit equations use both x and y. Keep multiplication explicit with * where needed.")
+            st.table([
+                {"Curve": "Circle", "Enter this equation": "x**2 + y**2 = 25"},
+                {"Curve": "Ellipse", "Enter this equation": "x**2/9 + y**2/4 = 1"},
+                {"Curve": "Hyperbola", "Enter this equation": "x**2 - y**2 = 1"},
+                {"Curve": "Straight line", "Enter this equation": "y = 2*x + 1"},
+            ])
+            st.caption("Implicit equations use both x and y. Write multiplication explicitly with * where needed.")
         st.markdown("### Try these examples")
         st.code("""x**2 - 4
     x**3 - 3*x
@@ -751,16 +751,16 @@ if st.session_state.mdx_page == "Graph Studio":
     if "mdx_functions" not in st.session_state:
         st.session_state.mdx_functions = [{"text": "x**2 - 4", "visible": True}]
 
+    st.session_state.setdefault("graph_dimension", "2D")
+    st.session_state.setdefault("graph_background_theme", "Current navy")
+    st.session_state.setdefault("graph_show_grid", True)
     with st.sidebar:
         st.header("⚙️ Graph settings")
-        st.selectbox("Graph dimension", ["2D", "3D"], index=0, key="graph_dimension", help="2D plots y=f(x) and implicit curves. 3D plots z=f(x,y) surfaces.")
-        st.selectbox("Graph background", ["Current navy", "Pure black", "White"], index=0, key="graph_background_theme", help="Choose the plotting area background: navy, black, or white.")
         x_min = st.number_input("x minimum", value=-10.0, step=1.0, key="x_min")
         x_max = st.number_input("x maximum", value=10.0, step=1.0, key="x_max")
         y_min = st.number_input("y minimum", value=-10.0, step=1.0, key="y_min")
         y_max = st.number_input("y maximum", value=10.0, step=1.0, key="y_max")
         st.caption("Use x**2 or x^2. Trigonometric functions use radians.")
-        st.checkbox("Show coordinate grid", value=True, key="graph_show_grid", help="Turn the x/y coordinate grid on or off.")
         st.caption("Explicit example: x**2 - 4")
         st.caption("Implicit example: (3*x-1)^2+(3*y)^2=a^2+b^2")
         st.number_input("Parameter a", value=2.0, step=0.5, key="parameter_a")
@@ -890,6 +890,21 @@ if st.session_state.mdx_page == "Graph Studio":
             else:
                 st.plotly_chart(make_graph(visible_items, x_min, x_max, y_min, y_max, height=570), use_container_width=True,
                     config={"scrollZoom": True, "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "MathDil_MDX_graph", "scale": 2}})
+
+        # Graph controls are intentionally placed directly below the plot for easy access.
+        st.markdown("#### 🎛️ Graph display options")
+        control_2d3d, control_bg, control_grid = st.columns([1.15, 1.6, 1.1])
+        with control_2d3d:
+            st.selectbox("Graph dimension", ["2D", "3D"], key="graph_dimension",
+                         help="2D plots y=f(x) and implicit curves. 3D plots z=f(x,y) surfaces.")
+        with control_bg:
+            st.selectbox("Background colour", ["Current navy", "Pure black", "White"],
+                         key="graph_background_theme", help="Choose navy, black, or white graph background.")
+        with control_grid:
+            st.checkbox("Show coordinate grid", key="graph_show_grid",
+                        help="Turn the coordinate grid on or off.")
+        st.caption("Choose 2D/3D, background colour, and grid options here below the graph. Changes apply automatically.")
+
         if explicit_functions:
             val = safe_value(expr, point_x)
             m1, m2, m3 = st.columns(3)
