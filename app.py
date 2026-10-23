@@ -1139,13 +1139,15 @@ if st.session_state.mdx_page == "Graph Studio":
                 st.download_button("⬇️ Download 2D animated HTML", data=html, file_name="MathDil_MDX_2D_graph_animation.html", mime="text/html")
                 st.success("2D animation created. Download the HTML file and open it in a browser.")
             else:
-                # 3D surface animation progressively reveals more rows of each surface.
-                grid_n = 65
+                # 3D: start with a genuinely blank surface, then reveal it row-by-row.
+                # Keeping the same full grid in every frame prevents Plotly from stretching
+                # or shifting the surface while the animation is playing.
+                grid_n = 90
                 xs3 = np.linspace(float(x_min), float(x_max), grid_n)
                 ys3 = np.linspace(float(y_min), float(y_max), grid_n)
                 X3, Y3 = np.meshgrid(xs3, ys3)
-                surface_data = []
                 z_values = []
+
                 for p in animation_functions:
                     try:
                         fn3 = sp.lambdify((x, y), p["expr"], modules=["numpy"])
@@ -1158,29 +1160,55 @@ if st.session_state.mdx_page == "Graph Studio":
                         Z3 = np.asarray(Z3, dtype=float)
                         Z3[~np.isfinite(Z3)] = np.nan
                         Z3[np.abs(Z3) > 1e6] = np.nan
+                        if np.count_nonzero(np.isfinite(Z3)) < 4:
+                            continue
                         z_values.append((p, Z3))
                     except Exception:
                         continue
+
                 if not z_values:
-                    st.warning("Could not evaluate the selected functions as 3D surfaces. Try expressions such as x**2 + y**2 or sin(x)*cos(y).")
+                    st.warning(
+                        "Could not evaluate the selected functions as 3D surfaces. "
+                        "Try expressions such as x**2 + y**2 or sin(x)*cos(y)."
+                    )
                 else:
+                    # First frame is fully blank. Each following frame reveals more rows.
+                    blank_z = np.full((grid_n, grid_n), np.nan, dtype=float)
+                    surface_data = []
                     for p, Z3 in z_values:
-                        first_rows = max(2, grid_n // frame_count)
-                        initial = Z3.copy()
-                        initial[first_rows:, :] = np.nan
-                        surface_data.append(go.Surface(x=X3, y=Y3, z=initial, name=p["label"], showscale=False,
-                            colorscale=[[0, p["color"]], [1, "#f8fafc"]], opacity=0.92,
-                            hovertemplate="x=%{x:.3f}<br>y=%{y:.3f}<br>z=%{z:.3f}<extra></extra>"))
+                        surface_data.append(go.Surface(
+                            x=X3, y=Y3, z=blank_z.copy(),
+                            name=p["label"], showscale=False, opacity=0.96,
+                            connectgaps=False,
+                            colorscale=[[0, p["color"]], [1, "#f8fafc"]],
+                            cmin=float(np.nanmin(Z3)), cmax=float(np.nanmax(Z3)) if float(np.nanmax(Z3)) > float(np.nanmin(Z3)) else float(np.nanmin(Z3)) + 1,
+                            hovertemplate="x=%{x:.3f}<br>y=%{y:.3f}<br>z=%{z:.3f}<extra></extra>"
+                        ))
+
                     frames = []
                     for k in range(1, frame_count + 1):
-                        upto = max(2, min(grid_n, int(grid_n * k / frame_count)))
+                        # Grow from the first row to the complete surface. At least two
+                        # adjacent rows are revealed so Plotly can render a visible patch.
+                        upto = max(2, min(grid_n, int(np.ceil(grid_n * k / frame_count))))
                         frame_surfaces = []
                         for p, Z3 in z_values:
                             Z_step = Z3.copy()
                             Z_step[upto:, :] = np.nan
-                            frame_surfaces.append(go.Surface(x=X3, y=Y3, z=Z_step, name=p["label"], showscale=False,
-                                colorscale=[[0, p["color"]], [1, "#f8fafc"]], opacity=0.92))
-                        frames.append(go.Frame(data=frame_surfaces, name=str(k)))
+                            frame_surfaces.append(go.Surface(
+                                x=X3, y=Y3, z=Z_step,
+                                name=p["label"], showscale=False, opacity=0.96,
+                                connectgaps=False,
+                                colorscale=[[0, p["color"]], [1, "#f8fafc"]],
+                                cmin=float(np.nanmin(Z3)),
+                                cmax=float(np.nanmax(Z3)) if float(np.nanmax(Z3)) > float(np.nanmin(Z3)) else float(np.nanmin(Z3)) + 1,
+                                hovertemplate="x=%{x:.3f}<br>y=%{y:.3f}<br>z=%{z:.3f}<extra></extra>"
+                            ))
+                        frames.append(go.Frame(
+                            data=frame_surfaces,
+                            traces=list(range(len(z_values))),
+                            name=str(k)
+                        ))
+
                     bg_choice = st.session_state.get("graph_background_theme", "Current navy")
                     is_white = bg_choice == "White"
                     bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
@@ -1188,20 +1216,61 @@ if st.session_state.mdx_page == "Graph Studio":
                     grid_on = st.session_state.get("graph_show_grid", True)
                     grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.28)"
                     fig = go.Figure(data=surface_data, frames=frames)
-                    fig.update_layout(template="plotly_white" if is_white else "plotly_dark", paper_bgcolor=bg, plot_bgcolor=bg,
-                        font=dict(color=font_color), height=600, title="MathDil MDX — 3D surface animation",
-                        scene=dict(xaxis_title="x", yaxis_title="y", zaxis_title="z",
+                    fig.update_layout(
+                        template="plotly_white" if is_white else "plotly_dark",
+                        paper_bgcolor=bg, plot_bgcolor=bg,
+                        font=dict(color=font_color), height=620,
+                        title="MathDil MDX — 3D surface animation",
+                        scene=dict(
+                            xaxis_title="x", yaxis_title="y", zaxis_title="z",
                             xaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg),
                             yaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg),
-                            zaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg), bgcolor=bg),
-                        updatemenus=[dict(type="buttons", showactive=False, buttons=[
-                            dict(label="▶ Play", method="animate", args=[None, {"frame": {"duration": duration, "redraw": True}, "fromcurrent": True}]),
-                            dict(label="↻ Reset", method="animate", args=[[None], {"frame": {"duration": 0, "redraw": True}, "mode": "immediate"}])])])
+                            zaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg),
+                            bgcolor=bg,
+                            aspectmode="auto",
+                            camera=dict(eye=dict(x=1.55, y=1.55, z=1.15))
+                        ),
+                        updatemenus=[dict(type="buttons", showactive=False, x=0.02, y=1.12, buttons=[
+                            dict(label="▶ Play", method="animate", args=[None, {
+                                "frame": {"duration": duration, "redraw": True},
+                                "transition": {"duration": 0},
+                                "fromcurrent": False,
+                                "mode": "immediate"
+                            }]),
+                            dict(label="↻ Replay", method="animate", args=[[str(i) for i in range(1, frame_count + 1)], {
+                                "frame": {"duration": duration, "redraw": True},
+                                "transition": {"duration": 0},
+                                "fromcurrent": False,
+                                "mode": "immediate"
+                            }]),
+                            dict(label="■ Stop", method="animate", args=[[None], {
+                                "frame": {"duration": 0, "redraw": True},
+                                "transition": {"duration": 0},
+                                "mode": "immediate"
+                            }])
+                        ])],
+                        sliders=[dict(
+                            active=0, x=0.12, y=0, len=0.82,
+                            currentvalue=dict(prefix="Frame: "),
+                            steps=[dict(
+                                method="animate", label=str(i),
+                                args=[[str(i)], {
+                                    "frame": {"duration": 0, "redraw": True},
+                                    "transition": {"duration": 0},
+                                    "mode": "immediate"
+                                }]
+                            ) for i in range(1, frame_count + 1)]
+                        )]
+                    )
                     html = fig.to_html(include_plotlyjs=True, full_html=True).encode("utf-8")
                     st.plotly_chart(fig, use_container_width=True, config={"displaylogo": False, "scrollZoom": True})
-                    st.download_button("⬇️ Download 3D animated HTML", data=html, file_name="MathDil_MDX_3D_surface_animation.html", mime="text/html")
-                    st.success("3D animation created. Download the HTML file and open it in a browser.")
-
+                    st.download_button(
+                        "⬇️ Download 3D animated HTML",
+                        data=html,
+                        file_name="MathDil_MDX_3D_surface_animation.html",
+                        mime="text/html"
+                    )
+                    st.success("3D animation created. Press Play to reveal the surface from a blank plot, or use Replay to watch it again.")
     with tabs[8]:
         st.markdown("### MathDil MDX — Algorithms")
         st.markdown("**Roots algorithm**")
