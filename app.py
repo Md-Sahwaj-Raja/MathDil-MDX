@@ -645,8 +645,8 @@ if st.session_state.mdx_page == "Graph Studio":
         fig.add_hline(y=0, line_color="#475569", line_width=1)
         fig.add_vline(x=0, line_color="#475569", line_width=1)
         yrange = [ylo, yhi] if ylo is not None and yhi is not None and ylo < yhi else None
-        grid_on = video_grid_on
-        bg_choice = video_bg_choice
+        grid_on = st.session_state.get("video_plot_grid", True)
+        bg_choice = st.session_state.get("video_plot_background", "Current navy")
         is_white = bg_choice == "White"
         plot_bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "rgba(5,16,38,0.98)")
         grid_color = "rgba(71,85,105,0.22)" if is_white else "rgba(103,232,249,0.22)"
@@ -670,8 +670,8 @@ if st.session_state.mdx_page == "Graph Studio":
     def make_graph_3d(items, xlo, xhi, ylo, yhi, height=570):
         """Plot entered expressions as surfaces z=f(x,y) in 3D mode."""
         fig = go.Figure()
-        grid_on = video_grid_on
-        bg_choice = video_bg_choice
+        grid_on = st.session_state.get("video_plot_grid", True)
+        bg_choice = st.session_state.get("video_plot_background", "Current navy")
         is_white = bg_choice == "White"
         bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
         grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.28)"
@@ -1129,11 +1129,11 @@ if st.session_state.mdx_page == "Graph Studio":
                         frame_data.append(go.Scatter(x=xs[:upto], y=ys_curve[:upto], mode="lines", line=dict(color=p["color"], width=3), name=p["label"]))
                     frames.append(go.Frame(data=frame_data, name=str(k)))
                 fig = go.Figure(data=traces, frames=frames)
-                bg_choice = video_bg_choice
+                bg_choice = st.session_state.get("video_plot_background", "Current navy")
                 is_white = bg_choice == "White"
                 plot_bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
                 font_color = "#172033" if is_white else "#E6F4FF"
-                grid_on = video_grid_on
+                grid_on = st.session_state.get("video_plot_grid", True)
                 grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.22)"
                 fig.update_layout(template="plotly_white" if is_white else "plotly_dark", paper_bgcolor=plot_bg, plot_bgcolor=plot_bg,
                     font=dict(color=font_color), height=520, title="MathDil MDX — 2D curve animation",
@@ -1222,11 +1222,11 @@ if st.session_state.mdx_page == "Graph Studio":
                             name=str(k)
                         ))
 
-                    bg_choice = video_bg_choice
+                    bg_choice = st.session_state.get("video_plot_background", "Current navy")
                     is_white = bg_choice == "White"
                     bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
                     font_color = "#172033" if is_white else "#E6F4FF"
-                    grid_on = video_grid_on
+                    grid_on = st.session_state.get("video_plot_grid", True)
                     grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.28)"
                     fig = go.Figure(data=surface_data, frames=frames)
                     fig.update_layout(
