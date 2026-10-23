@@ -1091,36 +1091,116 @@ if st.session_state.mdx_page == "Graph Studio":
                 st.download_button("⬇️ Download CSV", df.to_csv(index=False).encode("utf-8"), file_name="MathDil_MDX_value_table.csv", mime="text/csv")
 
     with tabs[7]:
-        st.markdown("### Video Plotter — progressive curve animation")
-        st.write("Create a progressive animation for all visible functions and download it as interactive HTML.")
-        frame_count = st.slider("Animation frames", min_value=10, max_value=80, value=35, step=5)
-        duration = st.slider("Milliseconds per frame", min_value=30, max_value=250, value=80, step=10)
+        st.markdown("### Video Plotter — progressive graph animation")
+        st.write("Choose whether to create a 2D curve animation or a 3D surface animation. The selected mode is used for the preview and downloaded HTML.")
+        animation_dimension = st.radio(
+            "Animation dimension", ["2D", "3D"], horizontal=True,
+            key="video_animation_dimension",
+            help="2D animates y=f(x) curves. 3D progressively reveals surfaces z=f(x,y)."
+        )
+        frame_count = st.slider("Animation frames", min_value=10, max_value=80, value=35, step=5, key="animation_frames")
+        duration = st.slider("Milliseconds per frame", min_value=30, max_value=250, value=80, step=10, key="animation_duration")
+        if animation_dimension == "2D":
+            st.caption("2D mode: animates explicit functions y = f(x). Implicit equations are not included in this animation.")
+        else:
+            st.caption("3D mode: animates surfaces z = f(x, y). Expressions depending only on x are shown as surfaces constant along y.")
+
         if st.button("Build animation", type="primary", key="build_animation"):
-            xs = np.linspace(x_min, x_max, 500)
-            traces, frames = [], []
             animation_functions = [p for p in parsed_functions if p["visible"] and not p.get("implicit", False)]
-            for p in animation_functions:
-                traces.append(go.Scatter(x=[], y=[], mode="lines", line=dict(color=p["color"], width=3), name=p["label"]))
-            if not traces:
-                st.warning("Show at least one explicit function of x before building the animation. Implicit curves are supported in Graph Studio but not in this animation module yet.")
-            else:
+            if not animation_functions:
+                st.warning("Show at least one explicit function before building the animation.")
+            elif animation_dimension == "2D":
+                xs = np.linspace(x_min, x_max, 500)
+                traces = [go.Scatter(x=[], y=[], mode="lines", line=dict(color=p["color"], width=3), name=p["label"]) for p in animation_functions]
+                frames = []
                 for k in range(1, frame_count + 1):
                     upto = max(2, int(len(xs) * k / frame_count))
                     frame_data = []
                     for p in animation_functions:
-                        ys = numeric_y(p["expr"], xs)
-                        frame_data.append(go.Scatter(x=xs[:upto], y=ys[:upto], mode="lines", line=dict(color=p["color"], width=3), name=p["label"]))
+                        ys_curve = numeric_y(p["expr"], xs)
+                        frame_data.append(go.Scatter(x=xs[:upto], y=ys_curve[:upto], mode="lines", line=dict(color=p["color"], width=3), name=p["label"]))
                     frames.append(go.Frame(data=frame_data, name=str(k)))
                 fig = go.Figure(data=traces, frames=frames)
-                fig.update_layout(template="plotly_white", height=520, title="MathDil MDX — progressive graph animation",
-                    xaxis=dict(title="x", range=[x_min, x_max]), yaxis=dict(title="y", range=[y_min, y_max]),
+                bg_choice = st.session_state.get("graph_background_theme", "Current navy")
+                is_white = bg_choice == "White"
+                plot_bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
+                font_color = "#172033" if is_white else "#E6F4FF"
+                grid_on = st.session_state.get("graph_show_grid", True)
+                grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.22)"
+                fig.update_layout(template="plotly_white" if is_white else "plotly_dark", paper_bgcolor=plot_bg, plot_bgcolor=plot_bg,
+                    font=dict(color=font_color), height=520, title="MathDil MDX — 2D curve animation",
+                    xaxis=dict(title="x", range=[x_min, x_max], showgrid=grid_on, gridcolor=grid_color),
+                    yaxis=dict(title="y", range=[y_min, y_max], showgrid=grid_on, gridcolor=grid_color),
                     updatemenus=[dict(type="buttons", showactive=False, buttons=[
                         dict(label="▶ Play", method="animate", args=[None, {"frame": {"duration": duration, "redraw": True}, "fromcurrent": True}]),
                         dict(label="↻ Reset", method="animate", args=[[None], {"frame": {"duration": 0, "redraw": True}, "mode": "immediate"}])])])
                 html = fig.to_html(include_plotlyjs=True, full_html=True).encode("utf-8")
                 st.plotly_chart(fig, use_container_width=True, config={"displaylogo": False})
-                st.download_button("⬇️ Download animated HTML", data=html, file_name="MathDil_MDX_graph_animation.html", mime="text/html")
-                st.success("Animation created. Download the HTML file and open it in a browser.")
+                st.download_button("⬇️ Download 2D animated HTML", data=html, file_name="MathDil_MDX_2D_graph_animation.html", mime="text/html")
+                st.success("2D animation created. Download the HTML file and open it in a browser.")
+            else:
+                # 3D surface animation progressively reveals more rows of each surface.
+                grid_n = 65
+                xs3 = np.linspace(float(x_min), float(x_max), grid_n)
+                ys3 = np.linspace(float(y_min), float(y_max), grid_n)
+                X3, Y3 = np.meshgrid(xs3, ys3)
+                surface_data = []
+                z_values = []
+                for p in animation_functions:
+                    try:
+                        fn3 = sp.lambdify((x, y), p["expr"], modules=["numpy"])
+                        with np.errstate(all="ignore"):
+                            Z3 = np.asarray(fn3(X3, Y3))
+                        if np.isscalar(Z3):
+                            Z3 = np.full(X3.shape, Z3)
+                        if np.iscomplexobj(Z3):
+                            Z3 = np.where(np.abs(Z3.imag) < 1e-8, Z3.real, np.nan)
+                        Z3 = np.asarray(Z3, dtype=float)
+                        Z3[~np.isfinite(Z3)] = np.nan
+                        Z3[np.abs(Z3) > 1e6] = np.nan
+                        z_values.append((p, Z3))
+                    except Exception:
+                        continue
+                if not z_values:
+                    st.warning("Could not evaluate the selected functions as 3D surfaces. Try expressions such as x**2 + y**2 or sin(x)*cos(y).")
+                else:
+                    for p, Z3 in z_values:
+                        first_rows = max(2, grid_n // frame_count)
+                        initial = Z3.copy()
+                        initial[first_rows:, :] = np.nan
+                        surface_data.append(go.Surface(x=X3, y=Y3, z=initial, name=p["label"], showscale=False,
+                            colorscale=[[0, p["color"]], [1, "#f8fafc"]], opacity=0.92,
+                            hovertemplate="x=%{x:.3f}<br>y=%{y:.3f}<br>z=%{z:.3f}<extra></extra>"))
+                    frames = []
+                    for k in range(1, frame_count + 1):
+                        upto = max(2, min(grid_n, int(grid_n * k / frame_count)))
+                        frame_surfaces = []
+                        for p, Z3 in z_values:
+                            Z_step = Z3.copy()
+                            Z_step[upto:, :] = np.nan
+                            frame_surfaces.append(go.Surface(x=X3, y=Y3, z=Z_step, name=p["label"], showscale=False,
+                                colorscale=[[0, p["color"]], [1, "#f8fafc"]], opacity=0.92))
+                        frames.append(go.Frame(data=frame_surfaces, name=str(k)))
+                    bg_choice = st.session_state.get("graph_background_theme", "Current navy")
+                    is_white = bg_choice == "White"
+                    bg = "#FFFFFF" if is_white else ("#000000" if bg_choice == "Pure black" else "#051026")
+                    font_color = "#172033" if is_white else "#E6F4FF"
+                    grid_on = st.session_state.get("graph_show_grid", True)
+                    grid_color = "rgba(71,85,105,.28)" if is_white else "rgba(103,232,249,.28)"
+                    fig = go.Figure(data=surface_data, frames=frames)
+                    fig.update_layout(template="plotly_white" if is_white else "plotly_dark", paper_bgcolor=bg, plot_bgcolor=bg,
+                        font=dict(color=font_color), height=600, title="MathDil MDX — 3D surface animation",
+                        scene=dict(xaxis_title="x", yaxis_title="y", zaxis_title="z",
+                            xaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg),
+                            yaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg),
+                            zaxis=dict(showbackground=True, showgrid=grid_on, gridcolor=grid_color, backgroundcolor=bg), bgcolor=bg),
+                        updatemenus=[dict(type="buttons", showactive=False, buttons=[
+                            dict(label="▶ Play", method="animate", args=[None, {"frame": {"duration": duration, "redraw": True}, "fromcurrent": True}]),
+                            dict(label="↻ Reset", method="animate", args=[[None], {"frame": {"duration": 0, "redraw": True}, "mode": "immediate"}])])])
+                    html = fig.to_html(include_plotlyjs=True, full_html=True).encode("utf-8")
+                    st.plotly_chart(fig, use_container_width=True, config={"displaylogo": False, "scrollZoom": True})
+                    st.download_button("⬇️ Download 3D animated HTML", data=html, file_name="MathDil_MDX_3D_surface_animation.html", mime="text/html")
+                    st.success("3D animation created. Download the HTML file and open it in a browser.")
 
     with tabs[8]:
         st.markdown("### MathDil MDX — Algorithms")
