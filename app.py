@@ -490,9 +490,71 @@ elif st.session_state.mdx_page == "Course Details":
         if st.button("← Back to Courses", key="course_details_back"):
             st.session_state.mdx_page = "Courses"
             st.rerun()
-elif st.session_state.mdx_page in ("Test & Learn", "Progress", "Tools"):
+elif st.session_state.mdx_page == "Tools":
+    st.markdown("## 🛠 Mathematical Tools")
+    st.markdown("Explore the supported function syntax used in MathDil MDX Graph Studio.")
+    st.markdown("""
+    <div style="padding:1rem 1.2rem;border:1px solid #087ea4;border-radius:16px;background:linear-gradient(120deg,rgba(4,45,78,.92),rgba(38,20,79,.88));margin:.5rem 0 1rem">
+      <div style="font-size:1.25rem;font-weight:800;color:#67e8f9">📘 Function Syntax Guide</div>
+      <div style="color:#d7eaff">Use <code>**</code> for powers and <code>*</code> for multiplication. You can use <code>^</code> for powers too; the graph parser converts it to <code>**</code>. Trigonometric functions use radians.</div>
+    </div>
+    """, unsafe_allow_html=True)
+    guide_tabs = st.tabs(["Algebra", "Trigonometry", "Exponential & Log", "Constants & Parameters", "Implicit Equations"])
+    with guide_tabs[0]:
+        st.markdown("""| Mathematics | Enter this |
+|---|---|
+| \(x^2\) | `x**2` |
+| \(x^3\) | `x**3` |
+| \(x^4+2x^2-1\) | `x**4 + 2*x**2 - 1` |
+| \(\sqrt{x}\) | `sqrt(x)` |
+| \(|x|\) | `abs(x)` |
+| \(1/x\) | `1/x` |
+| \(\frac{x^2-1}{x+1}\) | `(x**2 - 1)/(x + 1)` |""")
+    with guide_tabs[1]:
+        st.markdown("""| Mathematics | Enter this |
+|---|---|
+| \(\sin x\) | `sin(x)` |
+| \(\cos x\) | `cos(x)` |
+| \(\tan x\) | `tan(x)` |
+| \(\sin^{-1}x\) | `asin(x)` |
+| \(\cos^{-1}x\) | `acos(x)` |
+| \(\tan^{-1}x\) | `atan(x)` |
+| \(\sinh x, \cosh x, \tanh x\) | `sinh(x)`, `cosh(x)`, `tanh(x)` |""")
+    with guide_tabs[2]:
+        st.markdown("""| Mathematics | Enter this |
+|---|---|
+| \(e^x\) | `exp(x)` |
+| \(\ln x\) | `log(x)` or `ln(x)` |
+| \(e^{-x^2}\) | `exp(-x**2)` |
+| \(x e^{-x}\) | `x*exp(-x)` |""")
+    with guide_tabs[3]:
+        st.markdown("""| Symbol | Meaning |
+|---|---|
+| `pi` | \(\pi\) |
+| `E` | Euler's number \(e\) |
+| `a`, `b` | Adjustable parameters in the Graph Studio sidebar |""")
+    with guide_tabs[4]:
+        st.markdown("""| Curve | Enter this equation |
+|---|---|
+| Circle | `x**2 + y**2 = 25` |
+| Ellipse | `x**2/9 + y**2/4 = 1` |
+| Hyperbola | `x**2 - y**2 = 1` |
+| Line | `y = 2*x + 1` |""")
+        st.caption("Implicit equations use both x and y. Keep multiplication explicit with * where needed.")
+    st.markdown("### Try these examples")
+    st.code("""x**2 - 4
+x**3 - 3*x
+sin(x) + cos(x)
+exp(-x**2)
+(x**2 - 1)/(x + 1)
+x**2 + y**2 = 25""", language="text")
+    st.info("This guide lists functions currently supported by the Graph Studio parser. Other functions may need to be added to the parser before they can be plotted.")
+    if st.button("← Back to Home", key="back_home_tools"):
+        st.session_state.mdx_page = "Home"
+        st.rerun()
+elif st.session_state.mdx_page in ("Test & Learn", "Progress"):
     st.markdown(f"## {st.session_state.mdx_page}")
-    st.info("This section will be built step by step based on your instructions. The existing Graph Studio is kept separate and unchanged.")
+    st.info("This section will be built step by step based on your instructions. The existing Graph Studio is kept separate.")
     if st.button("← Back to Home", key="back_home"):
         st.session_state.mdx_page = "Home"
         st.rerun()
@@ -582,11 +644,19 @@ if st.session_state.mdx_page == "Graph Studio":
         fig.add_hline(y=0, line_color="#475569", line_width=1)
         fig.add_vline(x=0, line_color="#475569", line_width=1)
         yrange = [ylo, yhi] if ylo is not None and yhi is not None and ylo < yhi else None
-        fig.update_layout(template="plotly_white", height=height, title=title,
-            margin=dict(l=15, r=15, t=45 if title else 15, b=15), paper_bgcolor="white", plot_bgcolor="white",
-            hovermode="closest", xaxis=dict(title="x", range=[xlo, xhi], showgrid=True, gridcolor="#e7edf5", zeroline=False),
-            yaxis=dict(title="y", range=yrange, showgrid=True, gridcolor="#e7edf5", zeroline=False),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0))
+        grid_on = st.session_state.get("graph_show_grid", True)
+        fig.update_layout(template="plotly_dark", height=height, title=title,
+            margin=dict(l=15, r=15, t=45 if title else 15, b=15),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(5,16,38,0.98)",
+            font=dict(color="#E6F4FF"), hovermode="closest",
+            xaxis=dict(title="x", range=[xlo, xhi], showgrid=grid_on,
+                       gridcolor="rgba(103,232,249,0.22)", zeroline=True,
+                       zerolinecolor="#FFD166", zerolinewidth=1.5, linecolor="#54718F"),
+            yaxis=dict(title="y", range=yrange, showgrid=grid_on,
+                       gridcolor="rgba(168,85,247,0.20)", zeroline=True,
+                       zerolinecolor="#FFD166", zerolinewidth=1.5, linecolor="#54718F"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0,
+                        bgcolor="rgba(3,12,29,0.72)"))
         return fig
 
     def real_roots_in_window(expr, lo, hi):
@@ -641,6 +711,7 @@ if st.session_state.mdx_page == "Graph Studio":
         y_min = st.number_input("y minimum", value=-10.0, step=1.0, key="y_min")
         y_max = st.number_input("y maximum", value=10.0, step=1.0, key="y_max")
         st.caption("Use x**2 or x^2. Trigonometric functions use radians.")
+        st.checkbox("Show coordinate grid", value=True, key="graph_show_grid", help="Turn the x/y coordinate grid on or off.")
         st.caption("Explicit example: x**2 - 4")
         st.caption("Implicit example: (3*x-1)^2+(3*y)^2=a^2+b^2")
         st.number_input("Parameter a", value=2.0, step=0.5, key="parameter_a")
@@ -650,6 +721,12 @@ if st.session_state.mdx_page == "Graph Studio":
         st.error("Minimum values must be smaller than maximum values.")
         st.stop()
 
+    st.markdown("""
+    <div style="padding:1rem 1.2rem;border:1px solid #0e7490;border-radius:16px;background:linear-gradient(115deg,rgba(3,48,77,.96),rgba(48,22,84,.94) 55%,rgba(83,29,67,.9));margin:.2rem 0 1rem">
+      <div style="font-size:1.45rem;font-weight:850;color:#67e8f9">📈 MathDil Graph Studio</div>
+      <div style="color:#e2e8f0">Plot functions in vivid colours, compare curves, and toggle the coordinate grid from Graph settings.</div>
+    </div>
+    """, unsafe_allow_html=True)
     st.subheader("🧮 Function workspace")
     st.caption("Add multiple functions. All visible functions appear together in Graph Studio; choose one function below for detailed analysis.")
 
